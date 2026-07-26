@@ -298,3 +298,19 @@ Recommended path: `.meyermedia/repository.yml`.
 10. raise coverage floors gradually to the target profile
 
 Do not add a misleading coverage badge before the underlying suite and merge gate exist.
+
+## 15. Greg Framework ecosystem naming
+
+The Greg Framework naming policy is authoritative in [`GREG-ECOSYSTEM-NAMING.md`](./GREG-ECOSYSTEM-NAMING.md).
+
+Mandatory rules:
+
+- every repository whose name contains `greg` or `Greg` is classified as part of the Greg Framework ecosystem;
+- every maintained repository whose primary scope is the game Data Center must use a canonical `greg`-prefixed repository name;
+- Data Center mods, plugins, libraries, tools, bridges, websites, infrastructure and research use the type-specific prefixes defined in the naming policy;
+- unrelated Meyer Media projects must not use the `greg` prefix;
+- legacy Data Center repositories without the prefix must be renamed, consolidated or documented as upstream forks;
+- repository renames must preserve compatibility for assemblies, package IDs, namespaces, configuration keys, URLs and release artifacts;
+- Greg repositories declare `ecosystem: greg-framework` in `.meyermedia/repository.yml` and Data Center projects additionally declare `productFamily: data-center`.
+
+Naming compliance is part of the repository-policy CI gate.
