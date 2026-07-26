@@ -4,29 +4,28 @@ namespace GregMod.TemplateMod.Features;
 
 internal sealed class ExampleFeature
 {
-    private long _frameCount;
-    private string _sceneName = "boot";
+    private string _sceneName = "not loaded";
+    private long _ticks;
 
     public void Initialize()
     {
-        _frameCount = 0;
+        _ticks = 0;
     }
 
     public void Tick()
     {
-        _frameCount++;
-        // Add per-frame feature logic here.
+        _ticks++;
     }
 
     public void OnSceneLoaded(int buildIndex, string sceneName)
     {
-        _sceneName = sceneName;
+        _sceneName = $"{sceneName} ({buildIndex})";
     }
 
     public void DrawDebugHud()
     {
         GUI.Box(
-            new Rect(20f, 20f, 360f, 90f),
-            $"{BuildInfo.Name}\nScene: {_sceneName}\nFrames: {_frameCount}");
+            new Rect(20, 20, 360, 90),
+            $"{BuildInfo.Name} {BuildInfo.Version}\nScene: {_sceneName}\nTicks: {_ticks}");
     }
 }

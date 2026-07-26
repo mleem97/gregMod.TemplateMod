@@ -1,0 +1,8 @@
+<Project>
+  <!-- Copy this file to Directory.Build.local.props or run scripts/setup-dev.py. -->
+  <PropertyGroup>
+    <GameDir>C:/Program Files (x86)/Steam/steamapps/common/Data Center</GameDir>
+    <GameInteropDir>$(GameDir)/MelonLoader/Il2CppAssemblies</GameInteropDir>
+    <GregCorePath>$(GameDir)/Mods/gregCore.dll</GregCorePath>
+  </PropertyGroup>
+</Project>

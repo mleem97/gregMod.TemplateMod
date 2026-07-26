@@ -1,12 +1,14 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are documented here.
+
+The format follows Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
 ### Added
 
-- Reusable .NET 6 and MelonLoader project structure.
-- Harmony, preferences, logging, and feature bootstraps.
-- Cross-platform build and initialization scripts.
-- Optional gregCore detection.
+- Production-oriented MelonLoader IL2CPP template.
+- NuGet-based loader and interop dependency management.
+- Local game-assembly discovery and validation.
+- Build, deploy, packaging, CI, and initialization tooling.

@@ -1,25 +1,13 @@
-# Local assembly references
+# Local references
 
-Place development-only game and loader DLLs in this directory. DLLs are ignored by Git.
+Do not commit DLLs to this directory.
 
-Required by the default project:
+The preferred setup is to run:
 
-- `MelonLoader.dll`
-- `0Harmony.dll`
-- `Il2CppInterop.Runtime.dll`
-- `Il2Cppmscorlib.dll`
-- `Assembly-CSharp.dll`
-- `UnityEngine.CoreModule.dll`
-- `UnityEngine.IMGUIModule.dll`
-- `UnityEngine.PhysicsModule.dll`
-- `UnityEngine.TextRenderingModule.dll`
-- `UnityEngine.UI.dll`
-- `UnityEngine.UIModule.dll`
-- `Unity.InputSystem.dll`
-- `Unity.TextMeshPro.dll`
+```bash
+python scripts/setup-dev.py --game-dir "/path/to/Data Center"
+```
 
-Optional:
+The project then references the generated proxy assemblies directly from `MelonLoader/Il2CppAssemblies`.
 
-- `gregCore.dll`
-
-Instead of copying files here, set `GREGMOD_REFERENCE_ROOT` to another directory containing the DLLs.
+For an isolated or CI build, place the generated proxy assemblies in `.deps/interop/` or set `GREGMOD_INTEROP_DIR`.

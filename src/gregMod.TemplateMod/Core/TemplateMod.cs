@@ -1,4 +1,3 @@
-using System;
 using GregMod.TemplateMod.Features;
 using GregMod.TemplateMod.Infrastructure;
 using GregMod.TemplateMod.Patches;
@@ -8,21 +7,20 @@ namespace GregMod.TemplateMod.Core;
 
 public sealed class TemplateMod : MelonMod
 {
-    public static TemplateMod Instance { get; private set; }
-
-    private readonly ExampleFeature _exampleFeature = new();
+    private readonly ExampleFeature _feature = new();
 
     public override void OnInitializeMelon()
     {
         try
         {
-            Instance = this;
             ModLog.Initialize(LoggerInstance);
             ModPreferences.Initialize();
+            Il2CppTypeRegistry.Register();
+            PersistentHost.Create();
             PatchBootstrap.Apply(HarmonyInstance);
-            _exampleFeature.Initialize();
+            _feature.Initialize();
 
-            ModLog.Info($"{BuildInfo.Name} {BuildInfo.Version} loaded.");
+            ModLog.Info($"{BuildInfo.Name} {BuildInfo.Version} initialized.");
         }
         catch (Exception exception)
         {
@@ -33,6 +31,8 @@ public sealed class TemplateMod : MelonMod
 
     public override void OnUpdate()
     {
+        MainThreadDispatcher.Drain();
+
         if (!ModPreferences.Enabled)
         {
             return;
@@ -40,27 +40,25 @@ public sealed class TemplateMod : MelonMod
 
         try
         {
-            _exampleFeature.Tick();
+            _feature.Tick();
         }
         catch (Exception exception)
         {
-            ModLog.Error("Update failed", exception);
+            ModLog.Error("Feature update failed.", exception);
         }
     }
 
     public override void OnGUI()
     {
-        if (!ModPreferences.Enabled || !ModPreferences.ShowDebugHud)
+        if (ModPreferences.Enabled && ModPreferences.ShowDebugHud)
         {
-            return;
+            _feature.DrawDebugHud();
         }
-
-        _exampleFeature.DrawDebugHud();
     }
 
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)
     {
-        _exampleFeature.OnSceneLoaded(buildIndex, sceneName);
-        ModLog.Info($"Scene loaded: {sceneName} ({buildIndex})");
+        _feature.OnSceneLoaded(buildIndex, sceneName);
+        ModLog.Info($"Scene loaded: {sceneName} ({buildIndex}).");
     }
 }

@@ -1,39 +1,53 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <AssemblyName>gregMod.TemplateMod</AssemblyName>
     <RootNamespace>GregMod.TemplateMod</RootNamespace>
     <Version>0.1.0</Version>
     <Authors>mleem97</Authors>
     <Description>Template mod for Data Center</Description>
-    <GregModReferenceRoot Condition="'$(GREGMOD_REFERENCE_ROOT)' != ''">$(GREGMOD_REFERENCE_ROOT)</GregModReferenceRoot>
-    <GregModReferenceRoot Condition="'$(GregModReferenceRoot)' == ''">$(MSBuildProjectDirectory)/../../references</GregModReferenceRoot>
   </PropertyGroup>
 
-  <PropertyGroup Condition="Exists('$(GregModReferenceRoot)/gregCore.dll')">
+  <PropertyGroup Condition="Exists('$(GregCorePath)')">
     <DefineConstants>$(DefineConstants);GREGCORE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="MelonLoader"><HintPath>$(GregModReferenceRoot)/MelonLoader.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="0Harmony"><HintPath>$(GregModReferenceRoot)/0Harmony.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="Il2CppInterop.Runtime"><HintPath>$(GregModReferenceRoot)/Il2CppInterop.Runtime.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="Il2Cppmscorlib"><HintPath>$(GregModReferenceRoot)/Il2Cppmscorlib.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="Assembly-CSharp"><HintPath>$(GregModReferenceRoot)/Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="UnityEngine.CoreModule"><HintPath>$(GregModReferenceRoot)/UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="UnityEngine.IMGUIModule"><HintPath>$(GregModReferenceRoot)/UnityEngine.IMGUIModule.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="UnityEngine.PhysicsModule"><HintPath>$(GregModReferenceRoot)/UnityEngine.PhysicsModule.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="UnityEngine.TextRenderingModule"><HintPath>$(GregModReferenceRoot)/UnityEngine.TextRenderingModule.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="UnityEngine.UI"><HintPath>$(GregModReferenceRoot)/UnityEngine.UI.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="UnityEngine.UIModule"><HintPath>$(GregModReferenceRoot)/UnityEngine.UIModule.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="Unity.InputSystem"><HintPath>$(GregModReferenceRoot)/Unity.InputSystem.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="Unity.TextMeshPro"><HintPath>$(GregModReferenceRoot)/Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="gregCore" Condition="Exists('$(GregModReferenceRoot)/gregCore.dll')"><HintPath>$(GregModReferenceRoot)/gregCore.dll</HintPath><Private>false</Private></Reference>
+    <PackageReference Include="LavaGang.MelonLoader" PrivateAssets="all" />
   </ItemGroup>
 
-  <Target Name="ValidateGameReferences" BeforeTargets="ResolveReferences">
-    <Error Condition="!Exists('$(GregModReferenceRoot)/MelonLoader.dll')" Text="MelonLoader.dll was not found. Populate references/ or set GREGMOD_REFERENCE_ROOT." />
-    <Error Condition="!Exists('$(GregModReferenceRoot)/Assembly-CSharp.dll')" Text="Assembly-CSharp.dll was not found. Populate references/ or set GREGMOD_REFERENCE_ROOT." />
+  <ItemGroup Condition="Exists('$(GameInteropDir)')">
+    <Reference Include="$(GameInteropDir)/*.dll">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(GregCorePath)')">
+    <Reference Include="gregCore">
+      <HintPath>$(GregCorePath)</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidateGameReferences"
+          BeforeTargets="CoreCompile"
+          Condition="'$(SkipGameReferenceValidation)' != 'true'">
+    <Error Condition="!Exists('$(GameInteropDir)/Assembly-CSharp.dll')"
+           Text="Assembly-CSharp.dll was not found in $(GameInteropDir). Run scripts/setup-dev.py." />
+    <Error Condition="!Exists('$(GameInteropDir)/Il2Cppmscorlib.dll')"
+           Text="Il2Cppmscorlib.dll was not found in $(GameInteropDir). Run scripts/setup-dev.py." />
+    <Error Condition="!Exists('$(GameInteropDir)/UnityEngine.CoreModule.dll')"
+           Text="UnityEngine.CoreModule.dll was not found in $(GameInteropDir). Run scripts/setup-dev.py." />
+  </Target>
+
+  <Target Name="CopyModArtifact" AfterTargets="Build">
+    <MakeDir Directories="$(ArtifactsDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ArtifactsDir)" />
+    <Copy SourceFiles="$(TargetDir)$(AssemblyName).pdb"
+          DestinationFolder="$(ArtifactsDir)"
+          Condition="Exists('$(TargetDir)$(AssemblyName).pdb')" />
+    <Copy SourceFiles="$(TargetDir)$(AssemblyName).xml"
+          DestinationFolder="$(ArtifactsDir)"
+          Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
   </Target>
 </Project>

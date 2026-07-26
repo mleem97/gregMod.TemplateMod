@@ -1,11 +1,32 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.local.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+
   <PropertyGroup>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
-    <NoWarn>$(NoWarn);CS1701;CS1702</NoWarn>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <DebugType>portable</DebugType>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1701;CS1702</NoWarn>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepositoryRoot)artifacts/$(Configuration)</ArtifactsDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GameDir Condition="'$(GameDir)' == '' and '$(GREGMOD_GAME_DIR)' != ''">$(GREGMOD_GAME_DIR)</GameDir>
+    <GameInteropDir Condition="'$(GameInteropDir)' == '' and '$(GREGMOD_INTEROP_DIR)' != ''">$(GREGMOD_INTEROP_DIR)</GameInteropDir>
+    <GameInteropDir Condition="'$(GameInteropDir)' == '' and '$(GameDir)' != ''">$(GameDir)/MelonLoader/Il2CppAssemblies</GameInteropDir>
+    <GameInteropDir Condition="'$(GameInteropDir)' == ''">$(RepositoryRoot).deps/interop</GameInteropDir>
+    <GregCorePath Condition="'$(GregCorePath)' == '' and '$(GREGCORE_DLL)' != ''">$(GREGCORE_DLL)</GregCorePath>
+    <GregCorePath Condition="'$(GregCorePath)' == '' and '$(GameDir)' != '' and Exists('$(GameDir)/Mods/gregCore.dll')">$(GameDir)/Mods/gregCore.dll</GregCorePath>
   </PropertyGroup>
 </Project>

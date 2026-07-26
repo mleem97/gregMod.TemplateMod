@@ -1,66 +1,40 @@
 # Architecture
 
-## Lifecycle
+## Core
 
-`Core/TemplateMod.cs` owns the MelonLoader lifecycle. Keep lifecycle methods small and delegate work to feature classes.
+`TemplateMod` owns the MelonLoader lifecycle. Initialization is deliberately ordered:
 
-Recommended flow:
+1. logging
+2. preferences
+3. IL2CPP type registration
+4. persistent host creation
+5. Harmony patching
+6. feature initialization
 
-1. initialize logging and preferences
-2. apply Harmony patches
-3. initialize features
-4. dispatch `OnUpdate`, `OnGUI`, and scene events
+A failure during initialization is logged and rethrown so the loader reports a broken mod instead of leaving a partially initialized state.
 
-## Folders
+## Features
 
-### `Core`
+Feature classes contain user-facing behavior. They should not know how dependencies are discovered or how patches are registered.
 
-Assembly metadata and the MelonLoader entry point.
+Prefer explicit lifecycle methods such as `Initialize`, `Tick`, `OnSceneLoaded`, and `Shutdown`.
 
-### `Features`
+## Infrastructure
 
-Project behavior that can be tested and reasoned about independently. Avoid placing Harmony attributes here unless the feature is itself a patch.
+- `ModLog` centralizes structured messages.
+- `ModPreferences` owns MelonPreferences entries.
+- `Il2CppTypeRegistry` registers injected managed types exactly once.
+- `PersistentHost` provides an IL2CPP-compatible `MonoBehaviour`.
+- `MainThreadDispatcher` safely schedules work from background callbacks.
 
-### `Infrastructure`
+## Patches
 
-Logging, preferences, persistence, reflection helpers, and adapters around game or framework APIs.
+`PatchBootstrap` owns Harmony registration. Keep each patch small, document its target, and avoid broad `PatchAll` calls over unrelated assemblies.
 
-### `Patches`
+The example patch is behind `TEMPLATE_EXAMPLE_PATCH` so the template builds without assuming a concrete game method.
 
-Harmony bootstrap and narrowly scoped patch classes.
+## Optional gregCore
 
-Example patch shape:
+When `GregCorePath` points to an existing DLL, the project adds the reference and defines `GREGCORE`. The assembly metadata then declares the runtime dependency.
 
-```csharp
-[HarmonyPatch(typeof(TargetType), nameof(TargetType.TargetMethod))]
-internal static class TargetTypeTargetMethodPatch
-{
-    private static void Postfix(TargetType __instance)
-    {
-        // React to the original method.
-    }
-}
-```
-
-## Optional gregCore integration
-
-When `references/gregCore.dll` exists, the project defines `GREGCORE` and adds the Melon dependency. Guard gregCore-specific source with:
-
-```csharp
-#if GREGCORE
-using gregCore.API;
-#endif
-```
-
-This keeps the base template buildable for standalone mods.
-
-## Reference policy
-
-Game and framework DLLs must not be committed. Use `references/` locally or point `GREGMOD_REFERENCE_ROOT` at a shared reference directory.
-
-## Naming
-
-- repository and assembly: `gregMod.FeatureName`
-- namespace: `GregMod.FeatureName`
-- mod GUID: reverse-domain-style stable identifier
-- preferences category: assembly name
+Keep gregCore-specific integrations behind `#if GREGCORE` or in a separate adapter folder so a standalone build remains possible.

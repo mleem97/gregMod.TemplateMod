@@ -1,26 +1,36 @@
-# Build output
+# .NET
 bin/
 obj/
 artifacts/
 TestResults/
+*.user
+*.suo
+*.cache
+*.nupkg
+
+# Machine-specific dependency configuration
+Directory.Build.local.props
+.deps/
+references/*.dll
+references/**/*.dll
+
+# Game and loader binaries
+Assembly-CSharp.dll
+Il2Cppmscorlib.dll
+UnityEngine*.dll
+MelonLoader.dll
+0Harmony.dll
+Il2CppInterop*.dll
+gregCore.dll
 
 # IDE
 .vs/
-.vscode/
 .idea/
-*.user
-*.suo
-*.userprefs
-
-# Local game and loader assemblies
-references/*
-!references/README.md
-*.dll
-*.pdb
+.vscode/*.log
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Template initializer marker
+# Template state
 .template-initialized

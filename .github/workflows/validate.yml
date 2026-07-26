@@ -1,0 +1,65 @@
+name: Validate template
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Validate Python tools
+        run: python -m compileall -q scripts
+
+      - name: Restore public dependencies
+        run: dotnet restore gregMod.TemplateMod.sln
+
+      - name: Template initialization smoke test
+        shell: bash
+        run: |
+          cp -a . "$RUNNER_TEMP/template-smoke"
+          cd "$RUNNER_TEMP/template-smoke"
+          rm -rf .git
+          python scripts/init-template.py \
+            --name gregMod.SmokeTest \
+            --author ci \
+            --description "CI smoke-test mod"
+          test -f gregMod.SmokeTest.sln
+          test -f src/gregMod.SmokeTest/gregMod.SmokeTest.csproj
+          grep -q "com.ci.gregmodsmoketest" src/gregMod.SmokeTest/BuildInfo.cs
+
+  full-build:
+    if: ${{ vars.CI_INTEROP_ARCHIVE_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Download private interop archive
+        env:
+          URL: ${{ vars.CI_INTEROP_ARCHIVE_URL }}
+          TOKEN: ${{ secrets.CI_INTEROP_TOKEN }}
+        run: |
+          mkdir -p .deps/interop
+          if [ -n "$TOKEN" ]; then
+            curl --fail --location --header "Authorization: Bearer $TOKEN" "$URL" -o /tmp/interop.zip
+          else
+            curl --fail --location "$URL" -o /tmp/interop.zip
+          fi
+          unzip -q /tmp/interop.zip -d .deps/interop
+      - run: dotnet build gregMod.TemplateMod.sln --configuration Release

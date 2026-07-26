@@ -3,15 +3,12 @@ set -euo pipefail
 
 CONFIGURATION="${1:-Release}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT="$(find "$ROOT/src" -name '*.csproj' -type f | head -n 1)"
-OUTPUT="$ROOT/artifacts"
 
-if [[ -z "$PROJECT" ]]; then
-  echo "No .csproj file found below src/." >&2
-  exit 1
-fi
+python3 "$ROOT/scripts/verify-env.py"
+dotnet restore "$ROOT/gregMod.TemplateMod.sln"
+dotnet build "$ROOT/gregMod.TemplateMod.sln" \
+  --configuration "$CONFIGURATION" \
+  --no-restore \
+  --no-incremental
 
-mkdir -p "$OUTPUT"
-echo "Building $(basename "$PROJECT") [$CONFIGURATION]"
-dotnet build "$PROJECT" --configuration "$CONFIGURATION" --output "$OUTPUT" --no-incremental
-echo "Build output: $OUTPUT"
+echo "Artifact directory: $ROOT/artifacts/$CONFIGURATION"

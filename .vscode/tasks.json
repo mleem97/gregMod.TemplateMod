@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "gregMod: verify",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/verify-env.py"],
+      "problemMatcher": []
+    },
+    {
+      "label": "gregMod: build Release",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["build", "gregMod.TemplateMod.sln", "-c", "Release"],
+      "group": {"kind": "build", "isDefault": true},
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "gregMod: deploy",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/deploy.py"],
+      "dependsOn": "gregMod: build Release",
+      "problemMatcher": []
+    }
+  ]
+}

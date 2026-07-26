@@ -4,17 +4,15 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$RepositoryRoot = Split-Path -Parent $PSScriptRoot
-$Project = Get-ChildItem -Path (Join-Path $RepositoryRoot "src") -Filter "*.csproj" -Recurse | Select-Object -First 1
-$Output = Join-Path $RepositoryRoot "artifacts"
+$Root = Split-Path -Parent $PSScriptRoot
 
-if (-not $Project) {
-    throw "No .csproj file found below src/."
-}
+python (Join-Path $PSScriptRoot "verify-env.py")
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-New-Item -ItemType Directory -Path $Output -Force | Out-Null
-Write-Host "Building $($Project.Name) [$Configuration]" -ForegroundColor Cyan
+dotnet restore (Join-Path $Root "gregMod.TemplateMod.sln")
+dotnet build (Join-Path $Root "gregMod.TemplateMod.sln") `
+    --configuration $Configuration `
+    --no-restore `
+    --no-incremental
 
-dotnet build $Project.FullName --configuration $Configuration --output $Output --no-incremental
-
-Write-Host "Build output: $Output" -ForegroundColor Green
+Write-Host "Artifact directory: $(Join-Path $Root "artifacts\$Configuration")" -ForegroundColor Green
