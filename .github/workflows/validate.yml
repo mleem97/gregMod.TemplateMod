@@ -12,7 +12,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v7
         with:
@@ -46,8 +46,8 @@ jobs:
     if: ${{ vars.CI_INTEROP_ARCHIVE_URL != '' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
       - name: Download private interop archive
