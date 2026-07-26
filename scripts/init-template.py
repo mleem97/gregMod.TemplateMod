@@ -11,6 +11,7 @@ TEMPLATE_PROJECT = "gregMod.TemplateMod"
 TEMPLATE_NAMESPACE = "GregMod.TemplateMod"
 TEMPLATE_AUTHOR = "mleem97"
 TEMPLATE_DESCRIPTION = "Template mod for Data Center"
+TEMPLATE_GUID = "com.mleem97.gregmod.templatemod"
 PROJECT_PATTERN = re.compile(r"^gregMod\.[A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z][A-Za-z0-9]*)*$")
 TEXT_SUFFIXES = {".cs", ".csproj", ".props", ".md", ".py", ".ps1", ".sh", ".json", ".yml", ".yaml"}
 SKIP_PARTS = {".git", "bin", "obj", "artifacts"}
@@ -26,6 +27,11 @@ def parse_args() -> argparse.Namespace:
 
 def namespace_for(project_name: str) -> str:
     return "GregMod." + project_name.removeprefix("gregMod.")
+
+
+def slug(value: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "", value.lower())
+    return normalized or "author"
 
 
 def replace_text(root: Path, replacements: dict[str, str]) -> None:
@@ -66,12 +72,13 @@ def main() -> int:
         raise SystemExit("This repository has already been initialized from the template.")
 
     new_namespace = namespace_for(args.name)
+    new_guid = f"com.{slug(args.author)}.{slug(args.name)}"
     replacements = {
+        TEMPLATE_GUID: new_guid,
         TEMPLATE_NAMESPACE: new_namespace,
         TEMPLATE_PROJECT: args.name,
         TEMPLATE_AUTHOR: args.author,
         TEMPLATE_DESCRIPTION: args.description,
-        "com.mleem97.gregmod.templatemod": f"com.{args.author.lower()}.{args.name.lower().replace('.', '')}",
     }
 
     replace_text(root, replacements)
@@ -79,6 +86,8 @@ def main() -> int:
     marker.write_text(f"{args.name}\n", encoding="utf-8")
 
     print(f"Initialized {args.name}")
+    print(f"Namespace: {new_namespace}")
+    print(f"Mod GUID: {new_guid}")
     print("Next steps:")
     print("  1. Populate references/ or set GREGMOD_REFERENCE_ROOT.")
     print("  2. Run scripts/build.ps1 or scripts/build.sh.")
