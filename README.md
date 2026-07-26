@@ -95,4 +95,4 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for extension points and conv
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+Apache License 2.0. See [`LICENSE`](LICENSE).
