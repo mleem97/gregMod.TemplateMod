@@ -19,24 +19,28 @@ CHANGED="$(git diff --name-only "origin/$STAGE...HEAD" 2>/dev/null | sort -u || 
 # ---------- build ----------
 BUILD_RC=1; WARN_DEV=0; SOL=""
 build_dotnet() {
+  # NOTE: must run in the CURRENT shell (not $()) — it sets SOL/BUILD_RC/WARN_DEV
+  # and calls gpass/gfail directly.
   if [ "$NEEDS_REFS" = "true" ]; then
     mkdir -p references
     cp -n /opt/greg-refs/net6/*.dll references/ 2>/dev/null || true
     cp -n /opt/greg-refs/Il2CppAssemblies/*.dll references/ 2>/dev/null || true
+    if [ -x scripts/setup-dev.py ]; then
+      python3 scripts/setup-dev.py --game-dir /opt/greg-refs         --interop-dir /opt/greg-refs/Il2CppAssemblies --copy-interop >setup-dev.log 2>&1         || { gfail build "scripts/setup-dev.py failed (see setup-dev.log)"; return 1; }
+    fi
   fi
   SOL="$(find . -maxdepth 3 -name '*.sln' -not -path '*/obj/*' -not -path '*/bin/*' -not -path './.git/*' 2>/dev/null | head -n 1)"
   [ -z "$SOL" ] && SOL="$(find . -maxdepth 3 -name '*.csproj' -not -path '*/obj/*' -not -path '*/bin/*' -not -path './.git/*' -not -name '*Tests*' 2>/dev/null | head -n 1)"
-  if [ -z "$SOL" ]; then echo "NONE"; return 2; fi
+  if [ -z "$SOL" ]; then gfail build "no solution/project found"; return 2; fi
   dotnet build "$SOL" -c Release --nologo -v:m >build-dev.log 2>&1; BUILD_RC=$?
   WARN_DEV=$(grep -c "warning CS" build-dev.log || true)
-  echo "$SOL rc=$BUILD_RC warnings=$WARN_DEV"
+  if [ "$BUILD_RC" -eq 0 ]; then gpass build "$SOL ok, warnings=$WARN_DEV";
+  else gfail build "$SOL rc=$BUILD_RC (see build-dev.log)"; fi
 }
 case "$KIND" in
   dotnet*)
-    OUT="$(build_dotnet)" || { gfail build "no solution/project found"; OUT=""; }
-    if [ -n "$OUT" ]; then
-      [ "$BUILD_RC" -eq 0 ] && gpass build "$OUT" || gfail build "$OUT (see build-dev.log)"
-    fi
+    SOL=""; BUILD_RC=1; WARN_DEV=0
+    build_dotnet
     ;;
   rust)
     if [ -f Cargo.toml ]; then
