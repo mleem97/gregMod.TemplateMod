@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, shitcloud, gregmod-templatemod]
     steps:
       - uses: actions/checkout@v7
 
@@ -44,7 +44,7 @@ jobs:
 
   full-build:
     if: ${{ vars.CI_INTEROP_ARCHIVE_URL != '' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, shitcloud, gregmod-templatemod]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
